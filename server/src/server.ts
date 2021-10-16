@@ -1,0 +1,53 @@
+import express from 'express';
+// import path from 'path';
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { MessageEvent, ChatBoardMessage } from "./types/message";
+import { ChannelNames } from "./types/channel-names";
+import { MessageTypes } from "./types/message-types";
+
+const app = express();
+const httpServer = createServer({}, app);
+const port = parseInt(process.env.PORT as string, 10) || 3030;
+const io = new Server(httpServer, {
+    cors: {
+        origin: "http://localhost:8080",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true
+});
+let onlineCount: number = 0
+io.on(ChannelNames.connection, (socket) => {
+    console.log(`user connected with socket id:${socket.id}`);
+    onlineCount += 1
+    console.log(`Someone just joined. There are ${onlineCount} people online`)
+    socket.on(ChannelNames.messageFromUser, function (event: MessageEvent) {
+        if(event.type == MessageTypes.leave_notice){
+            socket.broadcast.emit(ChannelNames.chatroom, event)
+            console.log("server sends to all except the sender")
+        }else{
+            io.emit(ChannelNames.chatroom, event)
+            console.log("server sends to all")
+        }
+        console.log(event)
+    })
+
+    socket.on(ChannelNames.disconnect, (reason) => {
+        onlineCount = (onlineCount < 0) ? 0 : onlineCount-=1;
+        io.emit(ChannelNames.onlineCount, onlineCount);
+        console.log(`Someone just left with socket id:${socket.id} because of ${reason}. There are ${onlineCount} people online`)
+    });
+});
+
+// app.get('/', (_, res) => {
+//     console.log("a user connected to get index")
+//     // const indexFile = path.join(__dirname, '/index.html')
+//     // res.sendFile(indexFile);
+// });
+
+httpServer.listen(port, function () {
+    console.log('Express Http Server is listening on *:' + port);
+});
