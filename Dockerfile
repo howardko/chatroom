@@ -21,5 +21,5 @@ ADD . /app
 
 RUN ls
 
-EXPOSE 80
+# EXPOSE 80
 CMD [ "npm", "start" ]
