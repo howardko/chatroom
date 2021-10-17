@@ -7,6 +7,7 @@ import { ChannelNames } from "./types/channel-names";
 import { MessageTypes } from "./types/message-types";
 
 console.log(process.env);
+console.log("This is test for deployment");
 const app = express();
 const httpServer = createServer({}, app);
 

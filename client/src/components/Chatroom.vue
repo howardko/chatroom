@@ -2,7 +2,7 @@
 <section class="msger">
   <header class="msger-header">
     <div class="msger-header-title">
-      <i class="fas fa-comment-alt"></i> Chatroom
+      <i class="fas fa-comment-alt"></i> Howard's Chatroom
     </div>
     <div class="msger-header-options">
       <span><i class="fas fa-cog"></i></span>
