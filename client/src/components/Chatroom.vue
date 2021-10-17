@@ -32,21 +32,15 @@
 import Message from './Message.vue'
 import * as messageTypes from '../types/message-types'
 import * as channelNames from '../types/channel-names'
+import * as Configs from '../config'
 import {SocketIOCon} from  '../service/socket.io.js'
 // import SocketIO from 'socket.io-client'
 export default {
   data() {
-    let port = parseInt(process.env.PORT, 10) || 3030;
-    let wsHost = `http://localhost:${port}`
-    if (process.env.NODE_ENV !== 'production') {
-      port = parseInt(process.env.PORT, 10) || 80;
-      const host = `https://${process.env.HEROKU_APP_NAME}.herokuapp.com`
-      wsHost = `http://${host}:${port}`
-    }
     return {
       currentUser: this.$store.state.user.nickname,
       currentMessage: '',
-      socketIO: SocketIOCon(wsHost)
+      socketIO: SocketIOCon(Configs.HOST)
     }
   },
   methods: {

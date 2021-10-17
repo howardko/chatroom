@@ -7,8 +7,9 @@
     "build": "tsc",
     "build-ts-watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && cross-env NODE_ENV=development nodemon dist/server.js",
-    "serve": "cross-env NODE_ENV=production node dist/server.js"
+    "start-dev": "tsc && cross-env NODE_ENV=development nodemon dist/server.js",
+    "serve-local": "cross-env NODE_ENV=production node dist/server.js",
+    "start": "NODE_ENV=production PORT=80 node server.js"
   },
   "keywords": [],
   "author": "",

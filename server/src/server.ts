@@ -9,8 +9,8 @@ import { MessageTypes } from "./types/message-types";
 console.log(process.env);
 const app = express();
 const httpServer = createServer({}, app);
-const port = parseInt(process.env.PORT as string, 10) || 3030;
 
+const port = parseInt(process.env.PORT as string, 10) || 3030;
 const io: Server = process.env.NODE_ENV === "development" ? new Server(httpServer, {
     cors: {
         origin: "http://localhost:8080",
