@@ -10,25 +10,21 @@
     <br>
     <button class="btn btn-primary" @click="join">Join Chatroom</button>
   </div>
-  <p>{{error.message}}</p>
   <!-- <div>{{$store.state}}</div> -->
 </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      nickname: '',
-      error: {
-        message: ''
-      }
-    }
-  },
-  methods: {
-    join() {
-      this.$store.dispatch('join', this.nickname)
-    }
+<script lang="ts">
+import store from '../store'
+import {ActionTypes} from '../types/action-type'
+import { defineComponent, ref } from "vue";
+export default defineComponent({
+  setup() {
+    let nickname = ref("");
+    const join = ():void => {
+      store.dispatch(ActionTypes.JOIN, nickname)
+    };
+    return { join, nickname };
   }
-}
+});
 </script>

@@ -1,3 +1,6 @@
+@import url('https://davidtkatz.com/public_css/vue.css');
+@import url('https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css');
 #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -160,6 +163,14 @@
   .msger-send-btn {
     margin-left: 10px;
     background: rgb(0, 196, 65);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.23s;
+  }
+  .msger-leave-btn {
+    margin-left: 10px;
+    background: rgb(196, 0, 62);
     color: #fff;
     font-weight: bold;
     cursor: pointer;

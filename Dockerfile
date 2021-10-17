@@ -11,8 +11,8 @@ RUN cd client && npm install && npm run build
 FROM node:14.18-alpine
 WORKDIR /app
 COPY --from=client-build /app/client/dist ./
-COPY --from=client-build /app/client/index.css ./
-COPY --from=client-build /app/client/index.html ./
+# COPY --from=client-build /app/client/index.css ./
+# COPY --from=client-build /app/client/index.html ./
 COPY --from=server-build /app/server/dist ./
 ENV PATH /app/node_modules/.bin:$PATH
 ADD server/package.json /app

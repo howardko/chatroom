@@ -21,69 +21,76 @@
       @keyup.enter="sendMessage"
     />
     <button class="msger-send-btn" @click="sendMessage">Send</button>
-    <button class="btn btn-danger btn-sm msger-send-btn" @click="leave">Leave</button>
+    <button class="msger-leave-btn" @click="leave">Leave</button>
   </div>
 
-  <!-- <div>{{$store.state.messages}}</div> -->
+  <!-- <div>{{$store.state}}</div> -->
   </section>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, onMounted, ref } from "vue";
 import Message from './Message.vue'
-import * as messageTypes from '../types/message-types'
-import * as channelNames from '../types/channel-names'
-import * as Configs from '../config'
-import {SocketIOCon} from  '../service/socket.io.js'
-// import SocketIO from 'socket.io-client'
-export default {
-  data() {
-    return {
-      currentUser: this.$store.state.user.nickname,
-      currentMessage: '',
-      socketIO: SocketIOCon(Configs.HOST)
-    }
-  },
-  methods: {
-    leave() {
-      this.socketIO.emit(channelNames.MESSAGE_FROM_USER, {
-        type: messageTypes.LEAVE_NOTICE,
-        username: this.$store.state.user.nickname,
-        sentAt: Date.now()
-      })
-      this.socketIO.disconnect()
-      this.$store.dispatch('leave')
-    },
-    sendMessage() {
-      this.socketIO.emit(channelNames.MESSAGE_FROM_USER, {
-        type: messageTypes.CHAT,
-        username: this.$store.state.user.nickname,
-        message: this.currentMessage,
-        sentAt: Date.now()
-      })
-      this.currentMessage = ""
-    }
-  },
+import {MessageTypes} from '../types/message-type'
+import {ChannelTypes} from '../types/channel-type'
+import {MessageEvent} from '../models/message'
+import {ActionTypes} from '../types/action-type'
+import store from '../store'
+import {HOST} from '../configs/network'
+import {SocketIOCon} from  '../service/socket.io'
+export default defineComponent({
   components: {
     Message
   },
-  mounted() {
-    this.socketIO.emit(channelNames.MESSAGE_FROM_USER, {
-        type: messageTypes.JOINED_NOTICE,
-        username: this.$store.state.user.nickname,
-        sentAt: Date.now()
-    })
-    this.socketIO.on(channelNames.CHATROOM, message => {
+
+  setup() {
+    console.log("env:", process.env)
+    const socketIO = SocketIOCon(HOST)
+    let currentUser = ref(store.state.user.nickname);
+    let currentMessage = ref("");
+    const leave = (): void => {
+      const message: MessageEvent = {
+        type: MessageTypes.LEAVE_NOTICE,
+        username: store.state.user.nickname,
+        sentAt: new Date(Date.now()),
+        message: ""
+      }
+      socketIO.emit(ChannelTypes.MESSAGE_FROM_USER, message)
+      socketIO.disconnect()
+      store.dispatch(ActionTypes.LEAVE)
+    };
+    const sendMessage = (): void => {
+      const message: MessageEvent = {
+        type: MessageTypes.CHAT,
+        username: store.state.user.nickname,
+        message: currentMessage.value,
+        sentAt: new Date(Date.now())
+      }
+     socketIO.emit(ChannelTypes.MESSAGE_FROM_USER, message)
+      currentMessage.value = ""
+    }
+    onMounted(() => {
+      socketIO.emit(ChannelTypes.MESSAGE_FROM_USER, {
+        type: MessageTypes.JOINED_NOTICE,
+        username: store.state.user.nickname,
+        message: "",
+        sentAt: new Date(Date.now())
+      } as MessageEvent)
+      socketIO.on(ChannelTypes.CHATROOM, (message: MessageEvent) => {
         console.log('received all messages')
         console.log(message)
-        const date = new Date(+message.sentAt)
-        let received = {
+        const date = new Date(message.sentAt)
+        const received : MessageEvent = {
           type: message.type,
           username: message.username,
           sentAt: date,
+          message: message.message
         }
         received.message = (message.message != undefined)? message.message: ""
-        this.$store.dispatch('setMessages', received)
-    })
+        store.dispatch(ActionTypes.SET_MESSAGES, received)
+      })
+     })
+    return { leave, sendMessage, currentUser, currentMessage };
   }
-}
+})
 </script>

@@ -23,16 +23,28 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: ['message', 'self'],
-  methods: {
-    dateFormated(date){
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+import {MessageEvent} from '../models/message'
+export default defineComponent({
+  props: {
+    message: {
+      type: Object as PropType<MessageEvent>,
+      required: true
+    },
+    self: {
+      type: String,
+      required: true
+    },
+  },
+  setup() {
+    const dateFormated = (date: Date): string => {
       const hours = date.getHours()
       const mins = date.getMinutes()
       const formatted = `${(hours > 9)? hours:('0' + hours)}:${ mins > 9 ? mins: '0' + mins}`
       return formatted
     }
+    return {dateFormated};
   }
-}
+})
 </script>
