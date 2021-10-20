@@ -5,12 +5,15 @@ import { Server } from "socket.io";
 import { MessageEvent, ChatBoardMessage } from "./types/message";
 import { ChannelNames } from "./types/channel-names";
 import { MessageTypes } from "./types/message-types";
+import { appConfigs } from "./config/config";
 
-console.log(process.env);
+const configs = appConfigs(process.env);
+
+// console.log(configs);
 const app = express();
 const httpServer = createServer({}, app);
 
-const port = parseInt(process.env.PORT as string, 10) || 8080;
+// const port = parseInt(process.env.PORT as string, 10) || 8080;
 const io: Server = process.env.NODE_ENV === "development" ? new Server(httpServer, {
     cors: {
         origin: "http://localhost:8080",
@@ -57,6 +60,6 @@ if (process.env.NODE_ENV === "production") {
     });
 }
 
-httpServer.listen(port, function () {
-    console.log('Express Http Server is listening on *:' + port);
+httpServer.listen(configs.PORT, function () {
+    console.log('Express Http Server is listening on *:' + configs.PORT);
 });
