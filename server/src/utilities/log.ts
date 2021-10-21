@@ -1,20 +1,19 @@
 import * as R from "ramda"
+import {appConfigs} from "../config/config"
 
 const logger = {
-    debug: (env:string, log: string): void => {
-        if(env == "development"){
-            console.log(log)
+    debug: (message?: any, ...optionalParams: any[]): void => {
+        const env = appConfigs().NODE_ENV
+        if(env === "development"){
+            console.log(message, ...optionalParams)
         } 
     },
-    info: (env:string, log: string): void => {
-        console.log(log)
+    info: (message?: any, ...optionalParams: any[]): void => {
+        console.log(message, ...optionalParams)
     }
 }
 
-export const logDebug = R.curry(logger.debug)
-export const logDebugDEV = logDebug("developmment")
-export const logInfo = R.curry(logger.info)
+const logDebug = R.curry(logger.debug)
+export const Debug = logDebug()
+export const Info = R.curry(logger.info)
 
-import { pipe } from 'fp-ts/function';
-import * as O from "fp-ts/lib/Option";
-import * as A from "fp-ts/lib/Array";

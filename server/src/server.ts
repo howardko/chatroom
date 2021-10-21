@@ -1,19 +1,17 @@
 import express from 'express';
 import path from 'path';
 import { createServer } from "http";
-import { Server } from "socket.io";
-import { MessageEvent, ChatBoardMessage } from "./types/message";
+import { Server, Socket } from "socket.io";
+import { MessageEvent } from "./types/message";
 import { ChannelNames } from "./types/channel-names";
 import { MessageTypes } from "./types/message-types";
 import { appConfigs } from "./config/config";
 
-const configs = appConfigs(process.env);
+const configs = appConfigs();
 
-// console.log(configs);
 const app = express();
 const httpServer = createServer({}, app);
 
-// const port = parseInt(process.env.PORT as string, 10) || 8080;
 const io: Server = process.env.NODE_ENV === "development" ? new Server(httpServer, {
     cors: {
         origin: "http://localhost:8080",
@@ -29,17 +27,26 @@ const io: Server = process.env.NODE_ENV === "development" ? new Server(httpServe
 });
 
 let onlineCount: number = 0
+const sockets: Record<string, Socket> = {}
+
 io.on(ChannelNames.connection, (socket) => {
-    console.log(`user connected with socket id:${socket.id}`);
+    const id = socket.id
+    sockets[id] = socket
     onlineCount += 1
-    console.log(`Someone just joined. There are ${onlineCount} people online`)
+    console.log(`Someone just joined with socket id:${id}. There are ${onlineCount} people online`)
+
     socket.on(ChannelNames.messageFromUser, function (event: MessageEvent) {
         if(event.type == MessageTypes.leave_notice){
             socket.broadcast.emit(ChannelNames.chatroom, event)
-            console.log("server sends to all except the sender")
         }else{
-            io.emit(ChannelNames.chatroom, event)
-            console.log("server sends to all")
+            if (event.isPrivate && event.toId != ""){
+                const toSocket = io.sockets.sockets.get(event.toId)
+                if (toSocket != undefined) {
+                    toSocket.emit(ChannelNames.chatroom, event)
+                }
+            }else{
+                io.emit(ChannelNames.chatroom, event)
+            }
         }
         console.log(event)
     })

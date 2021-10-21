@@ -1,27 +1,31 @@
+import { string } from "fp-ts";
+import { boolean } from "fp-ts-std";
 import {MessageTypes} from "./message-types";
 
 export interface MessageEvent {
     type: string;
     username: string;
+    toId: string,
+    isPrivate: boolean,
     message: string;
     sentAt: Date;
     toString(): string;
   }
 
 // https://stackoverflow.com/questions/53128744/typescript-automatically-get-interface-properties-in-a-class
-export interface ChatBoardMessage extends MessageEvent { }
-export class ChatBoardMessage implements MessageEvent {
-    constructor (event: MessageEvent) {
-        Object.assign(this, event, {})
-      }
+// export interface ChatBoardMessage extends MessageEvent { }
+// export class ChatBoardMessage implements MessageEvent {
+//     constructor (event: MessageEvent) {
+//         Object.assign(this, event, {})
+//       }
 
-    toString(): string {
-      if (this.type == MessageTypes.chat){
-        return `${this.username}: ${this.message}`
-      }else if (this.type == MessageTypes.joined_notice){
-        return `${this.username} joined`
-      }else {
-        return `${this.username} left`
-      }
-    }
-}
+//     toString(): string {
+//       if (this.type == MessageTypes.chat){
+//         return `${this.username}: ${this.message}`
+//       }else if (this.type == MessageTypes.joined_notice){
+//         return `${this.username} joined`
+//       }else {
+//         return `${this.username} left`
+//       }
+//     }
+// }
