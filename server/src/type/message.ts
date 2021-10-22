@@ -1,6 +1,6 @@
 import { string } from "fp-ts";
 import { boolean } from "fp-ts-std";
-import {MessageTypes} from "./message-types";
+import {MessageTypes} from "./message-type";
 
 export interface MessageEvent {
     type: string;

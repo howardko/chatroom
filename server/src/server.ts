@@ -2,17 +2,20 @@ import express from 'express';
 import path from 'path';
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import { MessageEvent } from "./types/message";
-import { ChannelNames } from "./types/channel-names";
-import { MessageTypes } from "./types/message-types";
+import { MessageEvent } from "./type/message";
+import { ChannelNames } from "./type/channel-name";
+import { MessageTypes } from "./type/message-type";
+import { EnvironmentTypes } from "./type/environment-type";
 import { appConfigs } from "./config/config";
+import { Debug, Info } from "./utility/log";
+import { User } from './type/user';
+import { right, left, Either } from "fp-ts/lib/Either"
 
 const configs = appConfigs();
-
 const app = express();
 const httpServer = createServer({}, app);
 
-const io: Server = process.env.NODE_ENV === "development" ? new Server(httpServer, {
+const io: Server = configs.NODE_ENV === EnvironmentTypes.DEVELOPMENT ? new Server(httpServer, {
     cors: {
         origin: "http://localhost:8080",
         methods: ["GET", "POST"],
@@ -27,15 +30,17 @@ const io: Server = process.env.NODE_ENV === "development" ? new Server(httpServe
 });
 
 let onlineCount: number = 0
-const sockets: Record<string, Socket> = {}
+let users: Record<string, User> = {}
 
 io.on(ChannelNames.connection, (socket) => {
     const id = socket.id
-    sockets[id] = socket
     onlineCount += 1
-    console.log(`Someone just joined with socket id:${id}. There are ${onlineCount} people online`)
+    Info(`Someone just joined with socket id:${id}. There are ${onlineCount} people online`)
 
     socket.on(ChannelNames.messageFromUser, function (event: MessageEvent) {
+        if(event.type == MessageTypes.joined_notice){
+            // add user
+        }
         if(event.type == MessageTypes.leave_notice){
             socket.broadcast.emit(ChannelNames.chatroom, event)
         }else{
@@ -54,19 +59,37 @@ io.on(ChannelNames.connection, (socket) => {
     socket.on(ChannelNames.disconnect, (reason) => {
         onlineCount = (onlineCount < 0) ? 0 : onlineCount-=1;
         io.emit(ChannelNames.onlineCount, onlineCount);
-        console.log(`Someone just left with socket id:${socket.id} because of ${reason}. There are ${onlineCount} people online`)
+        Debug(`Someone just left with socket id:${socket.id} because of ${reason}. There are ${onlineCount} people online`)
     });
 });
 
-if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname)));
-    app.get('/', (_, res) => {
-        console.log("a user connected to get index")
-        const indexFile = path.join(__dirname, './index.html')
-        res.sendFile(indexFile);
-    });
-}
+// if (configs.NODE_ENV === EnvironmentTypes.PRODUCTION) {
+//     app.use(express.static(path.join(__dirname)));
+//     app.get('/', (_, res) => {
+//         Debug("A user connected to get index")
+//         const indexFile = path.join(__dirname, './index.html')
+//         res.sendFile(indexFile);
+//     });
+// }
+
+app.use(express.static(path.join(__dirname)));
+app.get('/', (_, res) => {
+    Debug("A user connected to get index")
+    const indexFile = path.join(__dirname, './index.html')
+    res.sendFile(indexFile);
+});
+app.get('/online_users', (_, res) => {
+    
+    
+});
+
+// function listOnlineUsers(): Either<Error, string[]> {
+//     Debug("List online users")
+//     return users
+//       ? right(generateToken(email))
+//       : left(new Error("bad credentials"))
+//   }
 
 httpServer.listen(configs.PORT, function () {
-    console.log('Express Http Server is listening on *:' + configs.PORT);
+    Info('Express Http Server is listening on *:' + configs.PORT);
 });

@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/function';
 import * as D from 'io-ts/Decoder'
 import * as E from "fp-ts/lib/Either";
-import { DecodeError } from 'io-ts/lib/DecodeError';
+// import { DecodeError } from 'io-ts/lib/DecodeError';
 
 const stringToIntPortDecoder: D.Decoder<string, number> = {
     decode: s => pipe(
