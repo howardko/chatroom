@@ -1,4 +1,3 @@
-import {spy} from "sinon"
 import {expect} from "chai"
 import {Users} from "./user" 
 import * as E from "fp-ts/lib/Either";
@@ -8,7 +7,7 @@ import { User } from '../type/user';
 it('Should successfully add one user', () => {
   const noUser: Record<string,User> = {"": {name: "", socketId: ""}}
   const users = Users.add({}, "Howard", {name: "Howard", socketId: "12345"})
-  const res = E.getOrElse((e:Error) => noUser)(users)
+  const res = E.getOrElse(() => noUser)(users)
   expect(res["Howard"].name).to.equals("Howard")
   expect(res["Howard"].socketId).to.equals("12345")
 });

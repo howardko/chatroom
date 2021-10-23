@@ -6,7 +6,7 @@ import {Debug, Info} from "./log"
 it('should log the info message to console when in development', () => {
   const sandbox = createSandbox();
   sandbox.stub(process, 'env').value({ 'NODE_ENV': 'development'});
-  let consoleLog = spy(console, 'log');
+  const consoleLog = spy(console, 'log');
   Info("test log");
   assert(consoleLog.calledWith("test log"), "Console.og does not output: test log");
 
@@ -19,7 +19,7 @@ it('should log the info message to console when in development', () => {
 it('should log the info message to console when in production', () => {
   const sandbox = createSandbox();
   sandbox.stub(process, 'env').value({ 'NODE_ENV': 'production'});
-  let consoleLog = spy(console, 'log');
+  const consoleLog = spy(console, 'log');
   Info("test log");
   assert(consoleLog.calledWith("test log"), "Console.og does not output: test log");
 
@@ -32,7 +32,7 @@ it('should log the info message to console when in production', () => {
 it('should log the debug message to console when in development', () => {
     const sandbox = createSandbox();
     sandbox.stub(process, 'env').value({ 'NODE_ENV': 'development'});
-    let consoleLog = spy(console, 'log');
+    const consoleLog = spy(console, 'log');
     Debug("test log");
     assert(consoleLog.calledWith("test log"), "Console.og does not output: test log");
 
@@ -45,7 +45,7 @@ it('should log the debug message to console when in development', () => {
 it('should not log the debug message to console when in production', () => {
     const sandbox = createSandbox();
     sandbox.stub(process, 'env').value({ 'NODE_ENV': 'production'});
-    let consoleLog = spy(console, 'log');
+    const consoleLog = spy(console, 'log');
     Debug("test log");
     assert(consoleLog.notCalled, "Console.log called");
 

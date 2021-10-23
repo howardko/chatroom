@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { User } from '../type/user';
 import {Users} from "../store/user" 
 import {convertToValidMessage} from "./message-filters" 

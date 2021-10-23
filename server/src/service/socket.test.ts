@@ -1,4 +1,4 @@
-import {spy, assert, createSandbox} from "sinon"
+import {spy, assert} from "sinon"
 import { Socket } from "socket.io";
 import {expect} from "chai"
 import { joinChatroomBroadcastAll, publicMessage, privateMessage, leaveChatroomBroadcastAll, disconnectChatroomBroadcastAll} from "./socket" 
@@ -41,7 +41,7 @@ describe('Tests for user connection', function () {
         console.log(`Should emit to all users when receiving a user join notice from ${socket.id}`)
         clientSocket = socket
         users = {}
-        let emit = spy(server, 'emit')
+        const emit = spy(server, 'emit')
         testEvent.message = "Howard joins"
         users = joinChatroomBroadcastAll(users, server, socket, testEvent)
         assert.calledWith(emit, ChannelNames.chatroom, testEvent);
@@ -51,7 +51,7 @@ describe('Tests for user connection', function () {
         done();
       });
       
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
         transports: ["websocket", "polling"] 
       });
     });
@@ -61,7 +61,7 @@ describe('Tests for user connection', function () {
       server.on(ChannelNames.connection, (socket) => {
         console.log(`Should emit to all users when receiving a user join notice from ${socket.id}`)
         clientSocket = socket
-        let emit = spy(socket, 'emit')
+        const emit = spy(socket, 'emit')
         testEvent.message = "Howard joins"
         const receivedCommand: Command = {
           type: CommandTypes.forcedLeave,
@@ -76,7 +76,7 @@ describe('Tests for user connection', function () {
         done();
       });
       
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
         transports: ["websocket", "polling"] 
       });
     });
@@ -88,7 +88,7 @@ describe('Tests for user connection', function () {
           console.log(`Should emit to all users when receiving a user leave notice from ${socket.id}`)
           clientSocket = socket
           users["Howard"].socketId = socket.id
-          let emit = spy(server, 'emit')
+          const emit = spy(server, 'emit')
           users = leaveChatroomBroadcastAll(users, server, testEvent)
           assert.calledWith(emit, ChannelNames.chatroom, testEvent);
           expect(users).to.eql({"Christon": {name: "Christon", socketId: "watever"}})
@@ -97,7 +97,7 @@ describe('Tests for user connection', function () {
           done();
         });
         
-        const client = io("http://localhost:3000", {
+        io("http://localhost:3000", {
           transports: ["websocket", "polling"] 
         });
     });
@@ -111,7 +111,7 @@ describe('Tests for user connection', function () {
             console.log(`[User disconnects] Should emit to all users when a user leaves from ${socket.id}`)
             users["Howard"].socketId = socket.id
             testEvent.message = "Howard left"
-            let emit = spy(server, 'emit')
+            const emit = spy(server, 'emit')
             users = disconnectChatroomBroadcastAll(users, server, socket.id, testEvent.sentAt)
             assert.calledWith(emit, ChannelNames.chatroom, testEvent);
             expect(users).to.eql({"Christon": {name: "Christon", socketId: "watever"}})
@@ -120,7 +120,7 @@ describe('Tests for user connection', function () {
           });
           done();
         });
-        const client = io("http://localhost:3000", {
+        io("http://localhost:3000", {
           transports: ["websocket", "polling"] 
         });
         //delay(1000)
@@ -138,7 +138,7 @@ describe('Tests for user connection', function () {
         socket.on(ChannelNames.disconnect, () => {
           console.log(`[User disconnects] Should not emit to all users when a non-existed user leaves from ${socket.id}`)
           users["Howard"].socketId = "another_id"
-          let emit = spy(server, 'emit')
+          const emit = spy(server, 'emit')
           const originUsers = users
           users = disconnectChatroomBroadcastAll(users, server, socket.id, testEvent.sentAt)
           assert.notCalled(emit);
@@ -148,18 +148,18 @@ describe('Tests for user connection', function () {
         });
         done();
       });
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
         transports: ["websocket", "polling"] 
       });
     });
 
 });
 
-/*
+
 describe('Tests for user chat', function () {
     let clientSocket: Socket;
     let toSocket: Socket;
-    let allSockets: Socket[] = []
+    const allSockets: Socket[] = []
     let server:Server; 
     let users: Record<string, User>;
     let testEvent: MessageEvent;
@@ -179,7 +179,7 @@ describe('Tests for user chat', function () {
         clientSocket.disconnect()
       }
       if (allSockets.length > 0) {
-        for (let client of allSockets) {
+        for (const client of allSockets) {
           if (client.connected) {
             client.disconnect()
           }
@@ -196,7 +196,7 @@ describe('Tests for user chat', function () {
         console.log(`Should emit to all users when receiving a user join notice from ${socket.id}`)
         clientSocket = socket
         users = {}
-        let emit = spy(server, 'emit')
+        const emit = spy(server, 'emit')
         testEvent.type = MessageTypes.chat
         testEvent.message = "Aloha"
         publicMessage(server, socket, testEvent)
@@ -205,7 +205,7 @@ describe('Tests for user chat', function () {
         done();
       });
       
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
         transports: ["websocket", "polling"] 
       });
     });
@@ -216,7 +216,7 @@ describe('Tests for user chat', function () {
         console.log(`Should send warning message to the origin user when receiving an improper public chat message from them from ${socket.id}`)
         clientSocket = socket
         users = {}
-        let emit = spy(socket, 'emit')
+        const emit = spy(socket, 'emit')
         testEvent.type = MessageTypes.chat
         testEvent.message = "dork! you idiot"
         publicMessage(server, socket, testEvent)
@@ -227,7 +227,7 @@ describe('Tests for user chat', function () {
         done();
       });
       
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
         transports: ["websocket", "polling"] 
       });
     });
@@ -238,7 +238,7 @@ describe('Tests for user chat', function () {
       server.on(ChannelNames.connection, (socket) => {
         console.log(`Should send warning message to the origin user when receiving a no to:user private message from them from ${socket.id}`)
         clientSocket = socket
-        let emit = spy(socket, 'emit')
+        const emit = spy(socket, 'emit')
         testEvent.isPrivate = true
         testEvent.to = ""
         testEvent.type = MessageTypes.chat
@@ -250,7 +250,7 @@ describe('Tests for user chat', function () {
         emit.restore();
         done();
       });
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
           transports: ["websocket", "polling"] 
         });
     });
@@ -261,7 +261,7 @@ describe('Tests for user chat', function () {
       server.on(ChannelNames.connection, (socket) => {
         console.log(`Should send warning message to the origin user when receiving a non-existed to:user private message from them from ${socket.id}`)
         clientSocket = socket
-        let emit = spy(socket, 'emit')
+        const emit = spy(socket, 'emit')
         testEvent.isPrivate = true
         testEvent.to = "not_existed_user"
         testEvent.type = MessageTypes.chat
@@ -273,7 +273,7 @@ describe('Tests for user chat', function () {
         emit.restore();
         done();
       });
-      const client = io("http://localhost:3000", {
+      io("http://localhost:3000", {
           transports: ["websocket", "polling"] 
         });
     });
@@ -288,8 +288,8 @@ describe('Tests for user chat', function () {
           users["Howard"] = {name: "Howard", socketId: socket.id}
           socket.on(ChannelNames.chatroom, (event: MessageEvent) => {
             console.log(`[Chat] Should successfully send private message from ${socket.id}`)
-            let emitChatFrom = spy(toSocket, 'emit')
-            let emitChatTo = spy(socket, 'emit')
+            const emitChatFrom = spy(toSocket, 'emit')
+            const emitChatTo = spy(socket, 'emit')
             privateMessage(users, server, socket, event)
             assert.calledWith(emitChatFrom, ChannelNames.chatroom, event);
             assert.calledWith(emitChatTo, ChannelNames.chatroom, event);
@@ -321,7 +321,7 @@ describe('Tests for user chat', function () {
           users["Howard"] = {name: "Howard", socketId: socket.id}
           socket.on(ChannelNames.chatroom, (event: MessageEvent) => {
             console.log(`[Chat] Should send warning message to the origin user when receiving a improper private message from them from ${socket.id}`)
-            let emit = spy(socket, 'emit')
+            const emit = spy(socket, 'emit')
             privateMessage(users, server, socket, event)
             const converted = {type: MessageTypes.chat, username: "Howard", to: "Amory", 
                               isPrivate: true, message: "Sorry! Your message is blocked due to violation of policy", sentAt: event.sentAt}
@@ -342,4 +342,3 @@ describe('Tests for user chat', function () {
     });
 
 });
-*/
