@@ -5,28 +5,31 @@ import {MessageEvent} from '../models/message'
 import { User } from '../models/user'
  
 export const Actions = {
-  [ActionTypes.JOIN]({commit}, user : User): void {
-    commit(MutationTypes.JOIN, user)
+  [ActionTypes.join]({commit}, user : User): void {
+    commit(MutationTypes.join, user)
   },
-  [ActionTypes.LEAVE]({commit}):void {
-    commit(MutationTypes.LEAVE)
+  [ActionTypes.leave]({commit}):void {
+    commit(MutationTypes.leave)
   },
-  [ActionTypes.SET_MESSAGES]({commit}, messageEvent: MessageEvent):void {
+  [ActionTypes.forcedLeave]({commit}, noticeMessage: string):void {
+    commit(MutationTypes.forcedLeave, noticeMessage)
+  },
+  [ActionTypes.setMessage]({commit}, messageEvent: MessageEvent):void {
     const currentMessage = messageEvent
     switch (messageEvent.type) {
       
-      case MessageTypes.CHAT:
+      case MessageTypes.chat:
         break;
-      case MessageTypes.LEAVE_NOTICE:
+      case MessageTypes.leaveNotice:
         currentMessage.message = `${currentMessage.username} left`
         break
-      case MessageTypes.JOINED_NOTICE:
+      case MessageTypes.joinedNotice:
         currentMessage.message = `${currentMessage.username} joined`
         break;
       default:
         console.log(`This message type is not recognized ${messageEvent.type}.`);
     }
   
-    commit(ActionTypes.SET_MESSAGES, currentMessage)
+    commit(ActionTypes.setMessage, currentMessage)
   }
 }

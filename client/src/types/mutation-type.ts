@@ -1,5 +1,6 @@
 export enum MutationTypes {
-    JOIN = 'JOIN',
-    LEAVE = 'LEAVE',
-    SET_MESSAGES = 'SET_MESSAGES'
+    join = 'JOIN',
+    leave = 'LEAVE',
+    setMessage = 'SET_MESSAGES',
+    forcedLeave = 'FORCED_LEAVE'
 }

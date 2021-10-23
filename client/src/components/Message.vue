@@ -1,8 +1,13 @@
 <template>
-  <div class="msg right-msg" v-if="self === message.username">
+  <div class="msg right-msg" v-if="me === message.username">
     <div class="msg-bubble">
-      <div class="msg-info">
-        <div class="msg-info-name">{{message.username}}</div>
+      <div class="msg-info" v-if="message.type === 'CHAT'">
+        <div class="msg-info-name" >{{message.username}}</div>
+        <div class="msg-info-name" v-if="message.to !== ''">對 {{message.to}} 說</div>
+        <div class="msg-info-name" v-else>說</div>
+        <div class="msg-info-time">{{dateFormated(message.sentAt)}}</div>
+      </div>
+      <div class="msg-info" v-else>
         <div class="msg-info-time">{{dateFormated(message.sentAt)}}</div>
       </div>
       <div class="msg-text">
@@ -12,8 +17,13 @@
   </div>
   <div class="msg left-msg" v-else>
     <div class="msg-bubble">
-      <div class="msg-info">
-        <div class="msg-info-name">{{message.username}}</div>
+      <div class="msg-info" v-if="message.type === 'CHAT'" >
+       <div class="msg-info-name" >{{message.username}}</div>
+        <div class="msg-info-name" v-if="message.to !== ''">對 {{message.to}} 說</div>
+        <div class="msg-info-name" v-else>說</div>
+        <div class="msg-info-time">{{dateFormated(message.sentAt)}}</div>
+      </div>
+      <div class="msg-info" v-else>
         <div class="msg-info-time">{{dateFormated(message.sentAt)}}</div>
       </div>
       <div class="msg-text">
@@ -32,10 +42,10 @@ export default defineComponent({
       type: Object as PropType<MessageEvent>,
       required: true
     },
-    self: {
+    me: {
       type: String,
       required: true
-    },
+    }
   },
   setup() {
     const dateFormated = (date: Date): string => {
