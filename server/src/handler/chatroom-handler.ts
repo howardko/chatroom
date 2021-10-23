@@ -5,7 +5,7 @@ import { User } from '../type/user';
 import {joinChatroomBroadcastAll, leaveChatroomBroadcastAll, privateMessage, publicMessage} from "../service/socket" 
 
 const routeToHandler = (users: Record<string,User>, server: Server, fromSocket:Socket, event: MessageEvent, handlers: {
-  whenJoin: (users: Record<string,User>, server: Server, socketId: string, event: MessageEvent) => Record<string, User>,
+  whenJoin: (users: Record<string,User>, server: Server, fromSocket:Socket, event: MessageEvent) => Record<string, User>,
   whenLeave: (users: Record<string,User>, server: Server, event: MessageEvent) => Record<string, User>,
   whenPrivateMessage: (users: Record<string,User>, server: Server, fromSocket:Socket, event: MessageEvent) => Record<string, User>,
   whenPublicMessage: (users: Record<string,User>, server: Server, fromSocket:Socket, event: MessageEvent) => Record<string, User>,
@@ -17,7 +17,7 @@ const routeToHandler = (users: Record<string,User>, server: Server, fromSocket:S
           }else{
               return handlers.whenPublicMessage(users, server, fromSocket, event)
           } 
-      case MessageTypes.joinedNotice: return handlers.whenJoin(users, server, fromSocket.id, event)
+      case MessageTypes.joinedNotice: return handlers.whenJoin(users, server, fromSocket, event)
       case MessageTypes.leaveNotice: return handlers.whenLeave(users, server, event)
       default:
           return users

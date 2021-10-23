@@ -3,21 +3,30 @@ import {MessageEvent} from '../models/message'
 import { State } from './state'
 
 export const Mutations = {
-  [MutationTypes.JOIN](state: State, nickname: string): void {
+  [MutationTypes.join](state: State, nickname: string): void {
     state.user = {
         nickname: nickname,
-        joined: true
+        joined: true,
+        noticeMessage: ''
     }
   },
-  [MutationTypes.LEAVE](state: State): void {
+  [MutationTypes.leave](state: State): void {
     state.user = {
         nickname: '',
-        joined: false
+        joined: false,
+        noticeMessage: ''
       }
     state.messages.splice(0, state.messages.length);
-
   },
-  [MutationTypes.SET_MESSAGES](state: State, message: MessageEvent): void {
+  [MutationTypes.forcedLeave](state: State, noticeMessage: string): void {
+    state.user = {
+        nickname: '',
+        joined: false,
+        noticeMessage: noticeMessage
+      }
+    state.messages.splice(0, state.messages.length);
+  },
+  [MutationTypes.setMessage](state: State, message: MessageEvent): void {
     state.messages.push(message)
   }
 }

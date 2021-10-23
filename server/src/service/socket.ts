@@ -3,7 +3,9 @@ import {Users} from "../store/user"
 import {convertToValidMessage} from "./message-filters" 
 import { Socket, Server } from "socket.io";
 import { MessageEvent } from "../type/message";
+import { Command } from "../type/command";
 import { MessageTypes } from "../type/message-type";
+import { CommandTypes } from "../type/command-type";
 import { ChannelNames } from "../type/channel-name";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";
@@ -11,20 +13,42 @@ import { pipe } from "fp-ts/lib/function"
 import { Debug } from "../utility/log";
 
 // join
-export const joinChatroomBroadcastAll = (users: Record<string,User>, server: Server, socketId: string, event: MessageEvent)  => {
-    const usersE = pipe(
+export const joinChatroomBroadcastAll = (users: Record<string,User>, server: Server, fromSocket:Socket, event: MessageEvent)  => {
+    return pipe(
       event.username,
       O.fromNullable,
       O.fold(
         () => E.left(new Error("The user has no name")),
-        () => {
-          Debug("[joinChatroomBroadcastAll] Received event:", event)
-          server.emit(ChannelNames.chatroom, event)
-          return Users.add(users, event.username, {name: event.username, socketId: socketId})
+        (userName: string) => {
+          return (userName === "") ? E.left(new Error("The user has no name")): E.right(userName)
         }
-      )
+      ),
+      E.fold(
+        () => E.left(new Error("The user has no name")),
+        () => {
+          Debug("[joinChatroomBroadcastAll-Right] Received event:", event)
+          return Users.add(users, event.username, {name: event.username, socketId: fromSocket.id})
+        }
+      ),
+      E.fold(
+        () => {
+          Debug("[joinChatroomBroadcastAll-Left] Add a user failed")
+          const command: Command = {
+            type: CommandTypes.forcedLeave,
+            to: event.username,
+            message: "Invalid user name or a user with the same name has already joined"
+          }
+          fromSocket.emit(ChannelNames.command, command)
+          return users
+        },
+        (addedUsers) => {
+          Debug("[joinChatroomBroadcastAll-Right] Successfully add a user")
+          server.emit(ChannelNames.chatroom, event)
+          return addedUsers
+        }
+      ),
     )
-    return E.getOrElse(() => users)(usersE)
+    //return E.getOrElse(() => users)(usersE)
 }
 
 // leave

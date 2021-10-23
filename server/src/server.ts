@@ -19,7 +19,7 @@ const httpServer = createServer({}, httpRouter);
 const server: Server = configs.NODE_ENV === EnvironmentTypes.development ? 
     new Server(httpServer, {
         cors: {
-            origin: "http://localhost:8080",
+            origin: "http://localhost:8081",
             methods: ["GET", "POST"],
             // allowedHeaders: ["my-custom-header"],
             credentials: true

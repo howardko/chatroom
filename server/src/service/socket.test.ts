@@ -5,6 +5,8 @@ import { joinChatroomBroadcastAll, publicMessage, privateMessage, leaveChatroomB
 import { MessageTypes } from "../type/message-type";
 import { MessageEvent } from "../type/message";
 import { ChannelNames } from "../type/channel-name";
+import { Command } from "../type/command";
+import { CommandTypes } from "../type/command-type";
 import { User } from '../type/user';
 import { Server } from "socket.io";
 import {io} from 'socket.io-client'
@@ -41,11 +43,11 @@ describe('Tests for user connection', function () {
         users = {}
         let emit = spy(server, 'emit')
         testEvent.message = "Howard joins"
-        users = joinChatroomBroadcastAll(users, server, socket.id, testEvent)
+        users = joinChatroomBroadcastAll(users, server, socket, testEvent)
         assert.calledWith(emit, ChannelNames.chatroom, testEvent);
         expect(users).to.eql({"Howard": {name: "Howard", socketId: socket.id}})
         emit.restore();
-        console.log(`Should emit to all users when receiving a user join notice - updated users: `, users)
+        // console.log(`Should emit to all users when receiving a user join notice - updated users: `, users)
         done();
       });
       
@@ -53,6 +55,32 @@ describe('Tests for user connection', function () {
         transports: ["websocket", "polling"] 
       });
     });
+
+    it('Should emit to the origin user user when there is an identical user name', function (done) {
+      server = new Server(3000);
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`Should emit to all users when receiving a user join notice from ${socket.id}`)
+        clientSocket = socket
+        let emit = spy(socket, 'emit')
+        testEvent.message = "Howard joins"
+        const receivedCommand: Command = {
+          type: CommandTypes.forcedLeave,
+          to: "Howard",
+          message: "Invalid user name or a user with the same name has already joined"
+        }
+        const usersAfterAdd = joinChatroomBroadcastAll(users, server, socket, testEvent)
+        assert.calledWith(emit, ChannelNames.command, receivedCommand);
+        expect(users).to.eql(usersAfterAdd)
+        emit.restore();
+        console.log(`Should emit to the origin user user when there is an identical user name - updated users: `, usersAfterAdd)
+        done();
+      });
+      
+      const client = io("http://localhost:3000", {
+        transports: ["websocket", "polling"] 
+      });
+    });
+
 
     it('Should emit to all users when receiving a user leave notice', function (done) {
         server = new Server(3000);
@@ -127,7 +155,7 @@ describe('Tests for user connection', function () {
 
 });
 
-
+/*
 describe('Tests for user chat', function () {
     let clientSocket: Socket;
     let toSocket: Socket;
@@ -314,3 +342,4 @@ describe('Tests for user chat', function () {
     });
 
 });
+*/

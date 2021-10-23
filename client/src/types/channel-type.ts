@@ -1,6 +1,7 @@
 export enum ChannelTypes {
-    CONNECTION = 'connection',
+    connection = 'connection',
     // MESSAGE_FROM_USER = 'messageFromUser',
-    CHATROOM = 'chatroom',
-    ONLINE_COUNT = 'onlineCount'
+    chatroom = 'chatroom',
+    command = 'command'
+    // ONLINE_COUNT = 'onlineCount'
 }

@@ -1,5 +1,5 @@
 export enum MessageTypes {
-    CHAT = 'CHAT',
-    JOINED_NOTICE = 'JOINED_NOTICE',
-    LEAVE_NOTICE = 'LEAVE_NOTICE'
+    chat = 'CHAT',
+    joinedNotice = 'JOINED_NOTICE',
+    leaveNotice = 'LEAVE_NOTICE'
 }
