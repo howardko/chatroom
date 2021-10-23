@@ -8,7 +8,8 @@
     "build-ts-watch": "tsc -w",
     "test:e2e": "node e2e",
     "test:unit": "ts-mocha src/**/*.test.ts",
-    "test:server": "ts-mocha src/service/socket.test.ts",
+    "test:socket": "ts-mocha src/service/socket.test.ts --timeout 5000",
+    "test:1": "ts-mocha src/service/message-filters.test.ts",
     "start-dev": "tsc && nodemon dist/server.js",
     "serve-local": "cross-env NODE_ENV=production node dist/server.js",
     "start": "NODE_ENV=production node server.js"

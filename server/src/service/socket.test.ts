@@ -1,31 +1,71 @@
 import {spy, assert, createSandbox} from "sinon"
-// import {assert} from "chai"
 import { Socket } from "socket.io";
 import {expect} from "chai"
-import {leaveChatroomBroadcastAll, disconnectChatroomBroadcastAll} from "./socket" 
+import { joinChatroomBroadcastAll, publicMessage, privateMessage, leaveChatroomBroadcastAll, disconnectChatroomBroadcastAll} from "./socket" 
 import { MessageTypes } from "../type/message-type";
+import { MessageEvent } from "../type/message";
 import { ChannelNames } from "../type/channel-name";
-import * as E from "fp-ts/lib/Either";
-import * as O from "fp-ts/lib/Option";
 import { User } from '../type/user';
 import { Server } from "socket.io";
 import {io} from 'socket.io-client'
 
-describe('Test for socket services', function () {
-    let outerSocket: Socket;
-    let server:Server; 
 
-    it('Should emit to all users when a user sends a leave notice', function (done) {
+describe('Tests for user connection', function () {
+    let clientSocket: Socket;
+    let server:Server; 
+    let users: Record<string, User>;
+    let testEvent: MessageEvent;
+
+    beforeEach(function (done) {
+      users = {
+        "Howard": {name: "Howard", socketId: ""},
+        "Christon": {name: "Christon", socketId: "watever"},
+      }
+      testEvent = {type: MessageTypes.leaveNotice, username: "Howard", to: "", isPrivate: false, message: "Howard leaves", sentAt: new Date(Date.now())}
+      done();
+    }),
+
+    afterEach(function (done) {
+      if (clientSocket.connected) {
+        clientSocket.disconnect()
+      }
+      server.close()
+      done();
+    });
+
+    it('Should emit to all users when receiving a user join notice', function (done) {
+      server = new Server(3000);
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`Should emit to all users when receiving a user join notice from ${socket.id}`)
+        clientSocket = socket
+        users = {}
+        let emit = spy(server, 'emit')
+        testEvent.message = "Howard joins"
+        users = joinChatroomBroadcastAll(users, server, socket.id, testEvent)
+        assert.calledWith(emit, ChannelNames.chatroom, testEvent);
+        expect(users).to.eql({"Howard": {name: "Howard", socketId: socket.id}})
+        emit.restore();
+        console.log(`Should emit to all users when receiving a user join notice - updated users: `, users)
+        done();
+      });
+      
+      const client = io("http://localhost:3000", {
+        transports: ["websocket", "polling"] 
+      });
+    });
+
+    it('Should emit to all users when receiving a user leave notice', function (done) {
         server = new Server(3000);
         server.on(ChannelNames.connection, (socket) => {
-          outerSocket = socket
-          // console.log(`@@@@@@@@@${socket.id}`)
-          let emit = spy(socket, 'emit')
-          const event = {type: MessageTypes.leave_notice, username: "howard", toId: "", isPrivate: false, message: "leave", sentAt: new Date(Date.now())}
-          leaveChatroomBroadcastAll(socket, event)
-          assert.calledWith(emit, ChannelNames.chatroom, event);
-          // console.log("####", event)
+          console.log(`Should emit to all users when receiving a user leave notice from ${socket.id}`)
+          clientSocket = socket
+          users["Howard"].socketId = socket.id
+          let emit = spy(server, 'emit')
+          users = leaveChatroomBroadcastAll(users, server, testEvent)
+          assert.calledWith(emit, ChannelNames.chatroom, testEvent);
+          expect(users).to.eql({"Christon": {name: "Christon", socketId: "watever"}})
           emit.restore();
+          console.log(`Should emit to all users when receiving a user leave notice - updated users: `, users)
           done();
         });
         
@@ -37,78 +77,240 @@ describe('Test for socket services', function () {
     it('Should emit to all users when a user leaves', function (done) {
         server = new Server(3000);
         server.on(ChannelNames.connection, (socket) => {
-          outerSocket = socket
-          // console.log(`@@@@@@@@@${socket.id}`)
+          console.log(`[User connects] Should emit to all users when a user leaves from ${socket.id}`)
+          clientSocket = socket
           socket.on(ChannelNames.disconnect, () => {
-            const now = new Date(Date.now())
-            const event = {type: MessageTypes.leave_notice, username: "Howard", toId: "", isPrivate: false, message: "Howard left", sentAt: now}
-            const user1:User = {name: "Howard", socketId: socket.id}
-            const user2:User = {name: "Mary", socketId: "whatever"}
-            let emit = spy(outerSocket, 'emit')
-            disconnectChatroomBroadcastAll(socket, { "Howard": user1, "Mary": user2}, now)
-            assert.calledWith(emit, ChannelNames.chatroom, event);
+            console.log(`[User disconnects] Should emit to all users when a user leaves from ${socket.id}`)
+            users["Howard"].socketId = socket.id
+            testEvent.message = "Howard left"
+            let emit = spy(server, 'emit')
+            users = disconnectChatroomBroadcastAll(users, server, socket.id, testEvent.sentAt)
+            assert.calledWith(emit, ChannelNames.chatroom, testEvent);
+            expect(users).to.eql({"Christon": {name: "Christon", socketId: "watever"}})
             emit.restore();
+            console.log(`Should emit to all users when a user leaves - updated users: `, users)
           });
           done();
         });
         const client = io("http://localhost:3000", {
           transports: ["websocket", "polling"] 
         });
+        //delay(1000)
+        // if (clientSocket.connected) {
+        //   console.log("HERE3")
+        //   clientSocket.disconnect()
+        // }
     });
 
     it('Should not emit to all users when a non-existed user leaves', function (done) {
       server = new Server(3000);
       server.on(ChannelNames.connection, (socket) => {
-        outerSocket = socket
-        // console.log(`@@@@@@@@@${socket.id}`)
+        console.log(`[User connects] Should not emit to all users when a non-existed user leaves from ${socket.id}`)
+        clientSocket = socket
         socket.on(ChannelNames.disconnect, () => {
-          const now = new Date(Date.now())
-          const event = {type: MessageTypes.leave_notice, username: "Howard", toId: "", isPrivate: false, message: "Howard left", sentAt: now}
-          let emit = spy(outerSocket, 'emit')
-          disconnectChatroomBroadcastAll(socket, {}, now)
+          console.log(`[User disconnects] Should not emit to all users when a non-existed user leaves from ${socket.id}`)
+          users["Howard"].socketId = "another_id"
+          let emit = spy(server, 'emit')
+          const originUsers = users
+          users = disconnectChatroomBroadcastAll(users, server, socket.id, testEvent.sentAt)
           assert.notCalled(emit);
+          expect(users).to.eql(originUsers)
           emit.restore();
+          console.log(`Should not emit to all users when a non-existed user leaves - updated users: `, users)
         });
         done();
       });
       const client = io("http://localhost:3000", {
         transports: ["websocket", "polling"] 
       });
-  });
-
-    afterEach(function (done) {
-      if (outerSocket.connected) {
-        outerSocket.disconnect()
-      }
-      server.close()
-      done();
     });
 
 });
 
 
-// it('Should emit to all users when a user leaves', () => {
-//   const server = new Server(3000);
-//   let socketId = ""
-//   server.on(ChannelNames.connection, (socket) => {
-//     socketId = socket.id
-//     console.log(`@@@@@@@@@${socket.id}`)
-//     socket.on(ChannelNames.disconnect, () => {
-//       const event = {type: MessageTypes.leave_notice, username: "howard", toId: "", isPrivate: false, message: "leave", sentAt: new Date(Date.now())}
-//       const user1:User = {name: "Howard", socketId: socketId}
-//       const user2:User = {name: "Mary", socketId: "whatever"}
-//       let emit = spy(socket, 'emit')
-//       console.log(`@@@@@@@@@111111${socket.id}`)
-//       disconnectChatroomBroadcastAll(socket, { "Howard": user1, "Mary": user2} )
-//       assert.calledWith(emit, ChannelNames.chatroom, {});
-//       emit.restore();
-//     })
-//   });
-  
-//   const client = io("http://localhost:3000", {
-//     transports: ["websocket", "polling"] 
-//   });
-//   client.disconnect()
-//   // server.close()
+describe('Tests for user chat', function () {
+    let clientSocket: Socket;
+    let toSocket: Socket;
+    let allSockets: Socket[] = []
+    let server:Server; 
+    let users: Record<string, User>;
+    let testEvent: MessageEvent;
 
-// });
+    beforeEach(function (done) {
+      // server = new Server(3000);
+      users = {
+        "Howard": {name: "Howard", socketId: ""},
+        "Christon": {name: "Christon", socketId: "watever"},
+      }
+      testEvent = {type: MessageTypes.leaveNotice, username: "Howard", to: "", isPrivate: false, message: "", sentAt: new Date(Date.now())}
+      done();
+    }),
+    
+    afterEach(function (done) {
+      if (clientSocket != undefined && clientSocket.connected) {
+        clientSocket.disconnect()
+      }
+      if (allSockets.length > 0) {
+        for (let client of allSockets) {
+          if (client.connected) {
+            client.disconnect()
+          }
+        }
+      }
+      server.close()
+      done();
+    });
+
+    
+    it('Should emit to all users when receiving a valid public chat message from a user', function (done) {
+      server = new Server(3000);
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`Should emit to all users when receiving a user join notice from ${socket.id}`)
+        clientSocket = socket
+        users = {}
+        let emit = spy(server, 'emit')
+        testEvent.type = MessageTypes.chat
+        testEvent.message = "Aloha"
+        publicMessage(server, socket, testEvent)
+        assert.calledWith(emit, ChannelNames.chatroom, testEvent);
+        emit.restore();
+        done();
+      });
+      
+      const client = io("http://localhost:3000", {
+        transports: ["websocket", "polling"] 
+      });
+    });
+
+    it('Should send warning message to the origin user when receiving an improper public chat message from them', function (done) {
+      server = new Server(3000);
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`Should send warning message to the origin user when receiving an improper public chat message from them from ${socket.id}`)
+        clientSocket = socket
+        users = {}
+        let emit = spy(socket, 'emit')
+        testEvent.type = MessageTypes.chat
+        testEvent.message = "dork! you idiot"
+        publicMessage(server, socket, testEvent)
+        const converted = {type: MessageTypes.chat, username: "Howard", to: "", 
+            isPrivate: false, message: "Sorry! Your message is blocked due to violation of policy", sentAt: testEvent.sentAt}
+        assert.calledWith(emit, ChannelNames.chatroom, converted);
+        emit.restore();
+        done();
+      });
+      
+      const client = io("http://localhost:3000", {
+        transports: ["websocket", "polling"] 
+      });
+    });
+
+
+    it('Should send warning message to the origin user when receiving a no to:user private message from them', function (done) {
+      server = new Server(3000);
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`Should send warning message to the origin user when receiving a no to:user private message from them from ${socket.id}`)
+        clientSocket = socket
+        let emit = spy(socket, 'emit')
+        testEvent.isPrivate = true
+        testEvent.to = ""
+        testEvent.type = MessageTypes.chat
+        testEvent.message = "Hello everyone"
+        privateMessage(users, server, socket, testEvent)
+        const converted = {type: MessageTypes.chat, username: "Howard", to: "", 
+            isPrivate: true, message: `There is no such user:${testEvent.to}`, sentAt: testEvent.sentAt}
+        assert.calledWith(emit, ChannelNames.chatroom, converted);
+        emit.restore();
+        done();
+      });
+      const client = io("http://localhost:3000", {
+          transports: ["websocket", "polling"] 
+        });
+    });
+
+ 
+    it('Should send warning message to the origin user when receiving a non-existed to:user private message from them', function (done) {
+      server = new Server(3000);
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`Should send warning message to the origin user when receiving a non-existed to:user private message from them from ${socket.id}`)
+        clientSocket = socket
+        let emit = spy(socket, 'emit')
+        testEvent.isPrivate = true
+        testEvent.to = "not_existed_user"
+        testEvent.type = MessageTypes.chat
+        testEvent.message = "Hello everyone"
+        privateMessage(users, server, socket, testEvent)
+        const converted = {type: MessageTypes.chat, username: "Howard", to: "not_existed_user", 
+                              isPrivate: true, message: `There is no such user:${testEvent.to}`, sentAt: testEvent.sentAt}
+        assert.calledWith(emit, ChannelNames.chatroom, converted);
+        emit.restore();
+        done();
+      });
+      const client = io("http://localhost:3000", {
+          transports: ["websocket", "polling"] 
+        });
+    });
+
+    it('Should successfully send private message', function (done) {
+      server = new Server(3000);
+      users = {}
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`[User Connected] Should successfully send private message from ${socket.id}`)
+        const socketCnt = allSockets.length
+        if (socketCnt == 0) {
+          users["Howard"] = {name: "Howard", socketId: socket.id}
+          socket.on(ChannelNames.chatroom, (event: MessageEvent) => {
+            console.log(`[Chat] Should successfully send private message from ${socket.id}`)
+            let emitChatFrom = spy(toSocket, 'emit')
+            let emitChatTo = spy(socket, 'emit')
+            privateMessage(users, server, socket, event)
+            assert.calledWith(emitChatFrom, ChannelNames.chatroom, event);
+            assert.calledWith(emitChatTo, ChannelNames.chatroom, event);
+            emitChatFrom.restore();
+            emitChatTo.restore();
+            done();
+          });
+        }else if (socketCnt == 1) {
+          toSocket = socket
+          users["Christon"] = {name: "Christon", socketId: socket.id}
+        }
+        allSockets.push(socket)
+      });
+      
+      const howardClient = io("http://localhost:3000", {transports: ["websocket", "polling"]});
+      io("http://localhost:3000", {transports: ["websocket", "polling"]});
+      const myMessage:MessageEvent = {type: MessageTypes.chat, username: "Howard", to: "Christon", isPrivate: true, message: "I love you", sentAt: new Date(Date.now())}
+      howardClient.emit(ChannelNames.chatroom, myMessage) 
+    });
+
+    
+    it('Should send warning message to the origin user when receiving a improper private message from them', function (done) {
+      server = new Server(3000);
+      users = {}
+      server.on(ChannelNames.connection, (socket) => {
+        console.log(`[User Connected] Should send warning message to the origin user when receiving a improper private message from them from ${socket.id}`)
+        const socketCnt = allSockets.length
+        if (socketCnt == 0) {
+          users["Howard"] = {name: "Howard", socketId: socket.id}
+          socket.on(ChannelNames.chatroom, (event: MessageEvent) => {
+            console.log(`[Chat] Should send warning message to the origin user when receiving a improper private message from them from ${socket.id}`)
+            let emit = spy(socket, 'emit')
+            privateMessage(users, server, socket, event)
+            const converted = {type: MessageTypes.chat, username: "Howard", to: "Amory", 
+                              isPrivate: true, message: "Sorry! Your message is blocked due to violation of policy", sentAt: event.sentAt}
+            assert.calledWith(emit, ChannelNames.chatroom, converted);
+            emit.restore();
+            done();
+          });
+        }else{
+          users["Amory"] = {name: "Amory", socketId: socket.id}
+        } 
+        allSockets.push(socket)
+      });
+      
+      const howardClient = io("http://localhost:3000", {transports: ["websocket", "polling"]});
+      io("http://localhost:3000", {transports: ["websocket", "polling"]});
+      const myMessage:MessageEvent = {type: MessageTypes.chat, username: "Howard", to: "Amory", isPrivate: true, message: "dork! stupid", sentAt: new Date(Date.now())}
+      howardClient.emit(ChannelNames.chatroom, myMessage) 
+    });
+
+});

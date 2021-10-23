@@ -1,5 +1,5 @@
 export const MessageTypes = { 
     chat: "CHAT", 
-    joined_notice: "JOINED_NOTICE",
-    leave_notice: "LEAVE_NOTICE"
+    joinedNotice: "JOINED_NOTICE",
+    leaveNotice: "LEAVE_NOTICE"
 } as const;

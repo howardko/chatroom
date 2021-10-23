@@ -1,7 +1,7 @@
 export const ChannelNames = { 
   connection: "connection", 
   disconnect: "disconnect",
-  messageFromUser: "messageFromUser", 
+  // messageFromUser: "messageFromUser", 
   chatroom: "chatroom",
-  onlineCount: "onlineCount"
+  // onlineCount: "onlineCount"
 } as const;

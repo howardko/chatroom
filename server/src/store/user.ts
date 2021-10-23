@@ -38,5 +38,8 @@ export const Users = {
   },
   listNames(users:Record<string,User>): Array<string> {
     return R.keys(users);
+  },
+  userCount(users:Record<string,User>): number {
+    return R.keys(users).length;
   }
 }

@@ -55,7 +55,7 @@ export default defineComponent({
         sentAt: new Date(Date.now()),
         message: ""
       }
-      socketIO.emit(ChannelTypes.MESSAGE_FROM_USER, message)
+      socketIO.emit(ChannelTypes.CHATROOM, message)
       socketIO.disconnect()
       store.dispatch(ActionTypes.LEAVE)
     };
@@ -66,11 +66,11 @@ export default defineComponent({
         message: currentMessage.value,
         sentAt: new Date(Date.now())
       }
-     socketIO.emit(ChannelTypes.MESSAGE_FROM_USER, message)
+     socketIO.emit(ChannelTypes.CHATROOM, message)
       currentMessage.value = ""
     }
     onMounted(() => {
-      socketIO.emit(ChannelTypes.MESSAGE_FROM_USER, {
+      socketIO.emit(ChannelTypes.CHATROOM, {
         type: MessageTypes.JOINED_NOTICE,
         username: store.state.user.nickname,
         message: "",

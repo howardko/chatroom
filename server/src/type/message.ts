@@ -5,11 +5,11 @@ import {MessageTypes} from "./message-type";
 export interface MessageEvent {
     type: string;
     username: string;
-    toId: string,
+    to: string,
     isPrivate: boolean,
     message: string;
     sentAt: Date;
-    toString(): string;
+    // toString(): string;
   }
 
 // https://stackoverflow.com/questions/53128744/typescript-automatically-get-interface-properties-in-a-class
