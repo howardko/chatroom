@@ -2,12 +2,12 @@ import express from 'express';
 import path from 'path';
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { MessageEvent } from "./type/message";
+import { MessageEvent } from "./model/message";
 import { ChannelNames } from "./type/channel-name";
 import { EnvironmentTypes } from "./type/environment-type";
 import { appConfigs} from "./config/config";
 import { Debug, Info } from "./utility/log";
-import { User } from './type/user';
+import { User } from './model/user';
 import { Users } from "./store/user" 
 import { disconnectChatroomBroadcastAll } from "./service/socket" 
 import { handle } from "./handler/chatroom-handler" 
@@ -47,11 +47,11 @@ server.on(ChannelNames.connection, (fromSocket) => {
 });
 
 httpRouter.use(express.static(path.join(__dirname)));
-httpRouter.get('/', (_, res) => {
-    Debug("A user connected to get index")
-    const indexFile = path.join(__dirname, './index.html')
-    res.sendFile(indexFile);
-});
+// httpRouter.get('/', (_, res) => {
+//     Debug("A user connected to get index")
+//     const indexFile = path.join(__dirname, './index.html')
+//     res.sendFile(indexFile);
+// });
 
 httpServer.listen(configs.PORT, function () {
     Info('Express Http Server is listening on *:' + configs.PORT);

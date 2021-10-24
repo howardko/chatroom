@@ -1,4 +1,4 @@
-import { User } from '../type/user';
+import { User } from '../model/user';
 import * as R from "fp-ts/lib/Record";
 import * as O from "fp-ts/lib/Option";
 import * as E from "fp-ts/lib/Either";

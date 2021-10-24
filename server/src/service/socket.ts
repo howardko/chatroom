@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { User } from '../type/user';
+import { User } from '../model/user';
 import {Users} from "../store/user" 
 import {convertToValidMessage} from "./message-filters" 
 import { Socket, Server } from "socket.io";
-import { MessageEvent } from "../type/message";
-import { Command } from "../type/command";
+import { MessageEvent } from "../model/message";
+import { Command } from "../model/command";
 import { MessageTypes } from "../type/message-type";
 import { CommandTypes } from "../type/command-type";
 import { ChannelNames } from "../type/channel-name";

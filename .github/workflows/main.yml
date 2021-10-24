@@ -6,14 +6,14 @@ name: Deploy to heroku.
 on:
   # Triggers the workflow on push or pull request events but only for the master, feature/deployment branch
   push:
-    branches: [ master, feature/deployment, feature/vue_typescript ]
+    branches: [ master, feature/deployment, feature/unit_test_ci ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -22,6 +22,22 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+
+      - name: Run unit tests
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+        
+      - run: |
+          cd ./server
+          npm ci
+      - run: |
+          cd ./server
+          npm run lint
+      - run: |
+          cd ./server
+          npm run test:coverage
 
       - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
         uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).

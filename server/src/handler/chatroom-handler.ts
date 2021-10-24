@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
-import { MessageEvent } from "../type/message";
+import { MessageEvent } from "../model/message";
 import { MessageTypes } from "../type/message-type";
-import { User } from '../type/user';
+import { User } from '../model/user';
 import {joinChatroomBroadcastAll, leaveChatroomBroadcastAll, privateMessage, publicMessage} from "../service/socket" 
 
 const routeToHandler = (users: Record<string,User>, server: Server, fromSocket:Socket, event: MessageEvent, handlers: {
