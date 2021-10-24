@@ -47,11 +47,11 @@ server.on(ChannelNames.connection, (fromSocket) => {
 });
 
 httpRouter.use(express.static(path.join(__dirname)));
-httpRouter.get('/', (_, res) => {
-    Debug("A user connected to get index")
-    const indexFile = path.join(__dirname, './index.html')
-    res.sendFile(indexFile);
-});
+// httpRouter.get('/', (_, res) => {
+//     Debug("A user connected to get index")
+//     const indexFile = path.join(__dirname, './index.html')
+//     res.sendFile(indexFile);
+// });
 
 httpServer.listen(configs.PORT, function () {
     Info('Express Http Server is listening on *:' + configs.PORT);

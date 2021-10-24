@@ -9,7 +9,6 @@
     "test:e2e": "node e2e",
     "test:unit": "ts-mocha src/**/*.test.ts --exit",
     "test:coverage": "nyc npm run test:unit",
-
     "test:socket": "ts-mocha src/service/socket.test.ts --timeout 5000 --exit",
     "test:1": "ts-mocha src/handler/chatroom-handler.test.ts",
     "lint": "eslint . --ext .ts",
@@ -63,18 +62,18 @@
     "check-coverage": true,
     "all": true,
     "include": [
-        "src/**/!(*.test.*).[tj]s?(x)"
+      "src/**/!(*.test.*).[tj]s?(x)"
     ],
     "exclude": [
-        "src/_tests_/**/*.*",
-        "src/server.ts"
+      "src/_tests_/**/*.*",
+      "src/server.ts"
     ],
     "reporter": [
-        "html",
-        "lcov",
-        "text",
-        "text-summary"
+      "html",
+      "lcov",
+      "text",
+      "text-summary"
     ],
-    "report-dir": "coverage"
+    "report-dir": "src/coverage"
   }
 }
