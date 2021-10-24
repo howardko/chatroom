@@ -2,12 +2,12 @@ import express from 'express';
 import path from 'path';
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { MessageEvent } from "./type/message";
+import { MessageEvent } from "./model/message";
 import { ChannelNames } from "./type/channel-name";
 import { EnvironmentTypes } from "./type/environment-type";
 import { appConfigs} from "./config/config";
 import { Debug, Info } from "./utility/log";
-import { User } from './type/user';
+import { User } from './model/user';
 import { Users } from "./store/user" 
 import { disconnectChatroomBroadcastAll } from "./service/socket" 
 import { handle } from "./handler/chatroom-handler" 
