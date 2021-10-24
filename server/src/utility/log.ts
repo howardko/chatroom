@@ -14,7 +14,6 @@ const logger = {
     }
 }
 
-const logDebug = R.curry(logger.debug)
-export const Debug = logDebug()
+export const Debug = R.curry(logger.debug)
 export const Info = R.curry(logger.info)
 

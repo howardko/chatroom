@@ -6,14 +6,11 @@
   "scripts": {
     "build": "tsc",
     "build-ts-watch": "tsc -w",
-    "test:e2e": "node e2e",
     "test:unit": "ts-mocha src/**/*.test.ts --exit",
     "test:coverage": "nyc npm run test:unit",
     "test:socket": "ts-mocha src/service/socket.test.ts --timeout 5000 --exit",
-    "test:1": "ts-mocha src/handler/chatroom-handler.test.ts",
     "lint": "eslint . --ext .ts",
     "start-dev": "tsc && nodemon dist/server.js",
-    "serve-local": "cross-env NODE_ENV=production node dist/server.js",
     "start": "NODE_ENV=production node server.js"
   },
   "keywords": [],

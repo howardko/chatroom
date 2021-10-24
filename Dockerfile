@@ -2,8 +2,8 @@ FROM node:14.18-alpine AS server-build
 WORKDIR /app
 COPY server/ ./server/
 RUN cd server && npm install && npm run build
-RUN cd ./server/dist 
-RUN ls
+# RUN cd ./server/dist 
+# RUN ls
 
 FROM node:14.18-alpine AS client-build
 WORKDIR /app
@@ -19,7 +19,7 @@ ADD server/package.json /app
 RUN npm install
 ADD . /app
 
-RUN apk update && apk add bash
+# RUN apk update && apk add bash
 
-RUN ls
+# RUN ls
 CMD [ "npm", "start" ]
